@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/Juiiceee/cleanKey/compare/v1.1.1...v1.1.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* restore fullscreen lock overlay ([b34c43c](https://github.com/Juiiceee/cleanKey/commit/b34c43c5b574c441d2d19d0a30b1c9931fed9812))
+* stop interception when permissions change ([acb186f](https://github.com/Juiiceee/cleanKey/commit/acb186f73529aa2e57bd3a00142733147cca6bb3))
+
 ## [1.1.1](https://github.com/Juiiceee/cleanKey/compare/v1.1.0...v1.1.1) (2026-05-13)
 
 
