@@ -1,5 +1,6 @@
 import AppKit
 import CleanKeyCore
+import os
 import SwiftUI
 
 final class OverlayController {
@@ -11,6 +12,7 @@ final class OverlayController {
 
     func show(lockController: LockController, shortcut: GlobalShortcut) {
         hide()
+        AppLogger.overlay.info("Showing overlay on \(NSScreen.screens.count, privacy: .public) screen(s).")
 
         for screen in NSScreen.screens {
             let window = NSPanel(
@@ -26,15 +28,27 @@ final class OverlayController {
             window.isOpaque = false
             window.hasShadow = false
             window.ignoresMouseEvents = false
+            window.isReleasedWhenClosed = false
+            window.hidesOnDeactivate = false
+            window.canHide = false
             window.contentView = NSHostingView(
                 rootView: LockOverlayView(lockController: lockController, shortcut: shortcut)
             )
-            window.makeKeyAndOrderFront(nil)
+            window.setFrame(screen.frame, display: true)
+            window.orderFrontRegardless()
             windows.append(window)
+
+            AppLogger.overlay.info(
+                "Overlay ordered front on frame \(String(describing: screen.frame), privacy: .public)."
+            )
         }
     }
 
     func hide() {
+        guard !windows.isEmpty else {
+            return
+        }
+        AppLogger.overlay.info("Hiding \(self.windows.count, privacy: .public) overlay window(s).")
         windows.forEach { $0.close() }
         windows.removeAll()
     }

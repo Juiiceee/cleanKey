@@ -1,6 +1,7 @@
 import CleanKeyCore
 import CoreGraphics
 import Foundation
+import os
 
 final class LockController: ObservableObject {
     @Published private(set) var isLocked = false
@@ -54,6 +55,7 @@ final class LockController: ObservableObject {
         if !didStart {
             lastError = "Interception macOS indisponible. Vérifie les permissions Accessibilité."
         }
+        AppLogger.lock.info("Start event tap result: \(didStart, privacy: .public).")
         return didStart
     }
 
@@ -72,9 +74,11 @@ final class LockController: ObservableObject {
     func lock() {
         guard isEventTapRunning else {
             lastError = "CleanKey ne peut pas verrouiller sans intercepteur d'événements."
+            AppLogger.lock.error("Lock refused because event tap is not running.")
             return
         }
         guard !isLocked else {
+            AppLogger.lock.info("Lock ignored because CleanKey is already locked.")
             return
         }
 
@@ -85,6 +89,9 @@ final class LockController: ObservableObject {
         lastError = nil
         scheduleAutoUnlock()
         OverlayController.shared.show(lockController: self, shortcut: settings.shortcut)
+        AppLogger.lock.info(
+            "Locked. Auto unlock duration: \(self.settings.autoUnlockDuration, privacy: .public)s."
+        )
     }
 
     func unlock() {
@@ -111,6 +118,7 @@ final class LockController: ObservableObject {
         releaseGuardTickTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             self?.updateReleaseGuardRemainingSeconds()
         }
+        AppLogger.lock.info("Release guard started.")
     }
 
     private func finishUnlock() {
@@ -125,6 +133,7 @@ final class LockController: ObservableObject {
         resetHeldShortcut()
         lockStartedAt = nil
         OverlayController.shared.hide()
+        AppLogger.lock.info("Unlocked.")
     }
 
     private func scheduleAutoUnlock() {
@@ -232,6 +241,9 @@ final class LockController: ObservableObject {
         unlockTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] _ in
             self?.tickUnlockHold()
         }
+        AppLogger.lock.info(
+            "Unlock hold started. Required duration: \(self.settings.unlockHoldDuration, privacy: .public)s."
+        )
     }
 
     private func tickUnlockHold() {

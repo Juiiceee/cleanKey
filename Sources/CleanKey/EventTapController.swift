@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import os
 
 protocol EventTapControllerDelegate: AnyObject {
     func eventTapController(_ controller: EventTapController, shouldConsume event: CGEvent, type: CGEventType) -> Bool
@@ -18,6 +19,7 @@ final class EventTapController {
 
     func start() -> Bool {
         if isRunning {
+            AppLogger.eventTap.info("Event tap already running.")
             return true
         }
 
@@ -29,6 +31,7 @@ final class EventTapController {
             callback: eventTapCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
+            AppLogger.eventTap.error("CGEvent tap creation failed.")
             return false
         }
 
@@ -38,10 +41,14 @@ final class EventTapController {
 
         eventTap = tap
         runLoopSource = source
+        AppLogger.eventTap.info("Event tap started.")
         return true
     }
 
     func stop() {
+        guard isRunning else {
+            return
+        }
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
@@ -50,6 +57,7 @@ final class EventTapController {
         }
         runLoopSource = nil
         eventTap = nil
+        AppLogger.eventTap.info("Event tap stopped.")
     }
 
     fileprivate func reenableIfPossible() {
@@ -57,6 +65,7 @@ final class EventTapController {
             return
         }
         CGEvent.tapEnable(tap: eventTap, enable: true)
+        AppLogger.eventTap.warning("Event tap was disabled by macOS and has been re-enabled.")
         delegate?.eventTapControllerWasReenabled(self)
     }
 
