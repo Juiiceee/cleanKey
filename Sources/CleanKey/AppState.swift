@@ -1,6 +1,7 @@
 import AppKit
 import CleanKeyCore
 import Foundation
+import os
 
 final class AppState: ObservableObject {
     @Published private(set) var settings: AppSettings
@@ -13,6 +14,7 @@ final class AppState: ObservableObject {
     private let settingsStore: SettingsStore
     private let permissionManager = PermissionManager()
     private let loginItemManager = LoginItemManager()
+    private var permissionMonitorTimer: Timer?
 
     var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
@@ -33,10 +35,11 @@ final class AppState: ObservableObject {
     func start() {
         refreshPermissions(prompt: false)
         refreshLaunchAtLogin()
-        _ = lockController.startEventTap()
+        startPermissionMonitor()
     }
 
     func shutdown() {
+        stopPermissionMonitor()
         lockController.unlock()
         lockController.stopEventTap()
     }
@@ -84,9 +87,18 @@ final class AppState: ObservableObject {
     }
 
     func refreshPermissions(prompt: Bool) {
-        permissionStatus = permissionManager.status(prompt: prompt)
-        if permissionStatus == .trusted && !lockController.isEventTapRunning {
+        let newStatus = permissionManager.status(prompt: prompt)
+        let wasTrusted = permissionStatus == .trusted
+        permissionStatus = newStatus
+
+        if newStatus == .trusted && !lockController.isEventTapRunning {
             _ = lockController.startEventTap()
+        } else if newStatus == .missing {
+            if wasTrusted || lockController.isEventTapRunning || lockController.isLocked {
+                AppLogger.lifecycle.warning("Accessibility permission missing while CleanKey is running; stopping event tap and unlocking.")
+            }
+            lockController.unlock()
+            lockController.stopEventTap()
         }
     }
 
@@ -104,6 +116,21 @@ final class AppState: ObservableObject {
             settings.launchAtLogin = launchAtLoginEnabled
             saveSettings()
         }
+    }
+
+    private func startPermissionMonitor() {
+        stopPermissionMonitor()
+
+        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+            self?.refreshPermissions(prompt: false)
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        permissionMonitorTimer = timer
+    }
+
+    private func stopPermissionMonitor() {
+        permissionMonitorTimer?.invalidate()
+        permissionMonitorTimer = nil
     }
 
     private func saveSettings() {
