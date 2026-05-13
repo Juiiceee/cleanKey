@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Juiiceee/cleanKey/compare/v1.1.0...v1.1.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* add app icon and signing support ([b987d14](https://github.com/Juiiceee/cleanKey/commit/b987d148272828f15b5a2473a55c58f71fbfc067))
+
 ## [1.1.0](https://github.com/Juiiceee/cleanKey/compare/v1.0.0...v1.1.0) (2026-05-13)
 
 
