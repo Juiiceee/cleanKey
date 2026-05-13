@@ -23,4 +23,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CleanKey
-          path: .build/app/CleanKey.zip
+          path: |
+            .build/app/CleanKey.zip
+            .build/app/CleanKey.dmg

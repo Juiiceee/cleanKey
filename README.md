@@ -13,8 +13,8 @@ Code source : https://github.com/Juiiceee/cleanKey
 
 ## Installation
 
-1. Télécharge `CleanKey.zip` depuis la dernière GitHub Release.
-2. Décompresse l’archive et place `CleanKey.app` dans `/Applications`.
+1. Télécharge `CleanKey.dmg` depuis la dernière GitHub Release.
+2. Ouvre le DMG et glisse `CleanKey.app` vers Applications.
 3. Lance l’app, puis autorise-la dans Réglages Système → Confidentialité et sécurité → Accessibilité.
 4. Si macOS le demande, autorise aussi Input Monitoring.
 
@@ -45,7 +45,7 @@ swift build -c release --product CleanKey
 ./scripts/package_app.sh
 ```
 
-Le bundle généré se trouve dans `.build/app/CleanKey.app` et l’archive dans `.build/app/CleanKey.zip`.
+Le bundle généré se trouve dans `.build/app/CleanKey.app`, l’archive ZIP dans `.build/app/CleanKey.zip`, et le DMG dans `.build/app/CleanKey.dmg`.
 
 ## Releases
 
@@ -55,7 +55,7 @@ Les releases sont gérées avec `release-please`. Utilise des commits Convention
 - `fix: correct something`
 - `chore: update tooling`
 
-Le workflow GitHub crée une Release PR, met à jour `CHANGELOG.md` et `version.txt`, puis attache `CleanKey.zip` à la release après merge.
+Le workflow GitHub crée une Release PR, met à jour `CHANGELOG.md` et `version.txt`, puis attache `CleanKey.dmg` et `CleanKey.zip` à la release après merge.
 
 Pour que `release-please` puisse créer ses PRs avec `GITHUB_TOKEN`, active dans GitHub :
 

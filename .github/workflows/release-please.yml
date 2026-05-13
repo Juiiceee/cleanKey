@@ -4,18 +4,24 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
 
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
+      release_created: ${{ steps.release.outputs.release_created == 'true' || steps.release.outputs.releases_created == 'true' }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
 
     steps:
       - uses: googleapis/release-please-action@v4
@@ -33,13 +39,30 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Resolve release tag
+        id: release-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.release.outputs.tag_name }}
+        run: |
+          if [ -z "$TAG_NAME" ]; then
+            TAG_NAME="$(gh release list --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Package app
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release-tag.outputs.tag_name }}
+
+      - name: Package app and DMG
         run: ./scripts/package_app.sh
 
-      - name: Upload ZIP to GitHub Release
+      - name: Upload artifacts to GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ needs.release.outputs.tag_name }}
-        run: gh release upload "$TAG_NAME" .build/app/CleanKey.zip --clobber
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.release-tag.outputs.tag_name }}
+        run: |
+          gh release upload "$TAG_NAME" \
+            .build/app/CleanKey.dmg \
+            .build/app/CleanKey.zip \
+            --clobber
