@@ -18,7 +18,12 @@ Code source : https://github.com/Juiiceee/cleanKey
 3. Lance l’app, puis autorise-la dans Réglages Système → Confidentialité et sécurité → Accessibilité.
 4. Si macOS le demande, autorise aussi Input Monitoring.
 
-La release v1 est distribuée en ZIP non signé. macOS peut afficher un avertissement au premier lancement.
+Si macOS affiche “CleanKey.app est endommagé”, c’est Gatekeeper qui bloque l’app téléchargée parce qu’elle n’est pas notarizée. En attendant une release notarizée avec certificat Apple Developer, copie l’app dans Applications puis lance :
+
+```bash
+xattr -dr com.apple.quarantine /Applications/CleanKey.app
+open /Applications/CleanKey.app
+```
 
 ## Réglages
 
@@ -63,6 +68,16 @@ Pour que `release-please` puisse créer ses PRs avec `GITHUB_TOKEN`, active dans
 - Settings → Actions → General → Allow GitHub Actions to create and approve pull requests.
 
 Pour que la CI se lance aussi sur les PRs créées par `release-please`, crée un secret `RELEASE_PLEASE_TOKEN` contenant un PAT avec accès au repo. Le workflow utilise ce secret s'il existe, sinon il revient à `GITHUB_TOKEN`.
+
+Pour éviter l’erreur Gatekeeper sur les téléchargements publics, configure aussi la signature/notarization Apple avec ces secrets :
+
+- `APPLE_CERTIFICATE_BASE64` : certificat Developer ID Application exporté en `.p12`, encodé en base64.
+- `APPLE_CERTIFICATE_PASSWORD` : mot de passe du `.p12`.
+- `APPLE_CERTIFICATE_NAME` : nom exact de l’identité, optionnel si le `.p12` contient une seule identité Developer ID Application.
+- `KEYCHAIN_PASSWORD` : mot de passe temporaire du keychain CI, optionnel.
+- `APPLE_ID` : identifiant Apple du compte développeur.
+- `APPLE_TEAM_ID` : Team ID Apple Developer.
+- `APPLE_APP_SPECIFIC_PASSWORD` : mot de passe d’app Apple pour `notarytool`.
 
 ## Licence
 

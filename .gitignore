@@ -8,3 +8,5 @@ DerivedData/
 *.xcuserdata/
 *.zip
 *.dmg
+*.keychain-db
+Packaging/*.iconset/

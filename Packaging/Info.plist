@@ -10,6 +10,8 @@
     <string>dev.loul.CleanKey</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>CleanKey</string>
     <key>CFBundleName</key>
     <string>CleanKey</string>
     <key>CFBundlePackageType</key>
@@ -21,6 +23,8 @@
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>
+    <true/>
+    <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSAppleEventsUsageDescription</key>
     <string>CleanKey utilise les permissions système pour gérer son lancement au démarrage.</string>
