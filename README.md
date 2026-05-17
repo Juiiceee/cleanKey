@@ -9,6 +9,12 @@ CleanKey is a lightweight macOS menu bar app that temporarily blocks keyboard, m
 
 The app is designed around one important rule: **you should never be trapped**. CleanKey includes a hold-to-unlock shortcut, a visible fullscreen countdown, permission monitoring, single-instance protection and an automatic safety unlock.
 
+## Preview
+
+| Locked overlay | Unlock progress |
+| --- | --- |
+| ![CleanKey locked overlay with automatic unlock countdown](docs/screenshots/locked-overlay.png) | ![CleanKey unlock progress overlay](docs/screenshots/unlock-progress.png) |
+
 ## Features
 
 - Global shortcut to lock all input.
@@ -259,21 +265,7 @@ For code changes:
 - run `swift build` and `swift test` when possible;
 - use Conventional Commits so release-please can generate clean releases.
 
-## Screenshots
-
-### Locked Overlay
-
-CleanKey blocks keyboard, mouse and trackpad input while showing a visible safety countdown.
-
-![CleanKey locked overlay with automatic unlock countdown](docs/screenshots/locked-overlay.png)
-
-### Unlock Progress
-
-Hold the configured shortcut for 5 seconds to unlock. The overlay shows live progress so the state is always visible.
-
-![CleanKey unlock progress overlay](docs/screenshots/unlock-progress.png)
-
-Screenshots still worth adding:
+## Additional Screenshots
 
 - menu bar dropdown while CleanKey is ready;
 - settings window showing shortcut, permissions and launch at login;
