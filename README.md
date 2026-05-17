@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Juiiceee/cleanKey/actions/workflows/ci.yml/badge.svg)](https://github.com/Juiiceee/cleanKey/actions/workflows/ci.yml)
 [![Release Please](https://github.com/Juiiceee/cleanKey/actions/workflows/release-please.yml/badge.svg)](https://github.com/Juiiceee/cleanKey/actions/workflows/release-please.yml)
-[![Latest release](https://img.shields.io/github/v/release/Juiiceee/cleanKey?label=release)](https://github.com/Juiiceee/cleanKey/releases)
+[![Latest release](https://img.shields.io/github/v/release/Juiiceee/cleanKey?label=release&cacheSeconds=300)](https://github.com/Juiiceee/cleanKey/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 CleanKey is a lightweight macOS menu bar app that temporarily blocks keyboard, mouse and trackpad input so you can clean your keyboard without triggering shortcuts, clicks or accidental text input.
