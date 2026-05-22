@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Juiiceee/cleanKey/compare/v1.1.2...v1.2.0) (2026-05-22)
+
+
+### Features
+
+* add dev preview hotkey and unlock timer setting ([9fda496](https://github.com/Juiiceee/cleanKey/commit/9fda496bb7b8012b80b681c24c41d752a2048d5c))
+
 ## [1.1.2](https://github.com/Juiiceee/cleanKey/compare/v1.1.1...v1.1.2) (2026-05-13)
 
 
