@@ -12,6 +12,7 @@ final class LockController: ObservableObject {
     @Published private(set) var isReleaseGuardActive = false
     @Published private(set) var releaseGuardRemainingSeconds = 0
     @Published private(set) var isEventTapRunning = false
+    @Published private(set) var isDevelopmentPreview = false
     @Published var lastError: String?
 
     private let eventTapController = EventTapController()
@@ -59,6 +60,33 @@ final class LockController: ObservableObject {
         return didStart
     }
 
+    func lockForDevelopmentPreview() {
+        guard !isLocked else {
+            AppLogger.lock.info("Development preview lock ignored because CleanKey is already locked.")
+            return
+        }
+
+        isDevelopmentPreview = true
+        beginLock()
+        AppLogger.lock.info("Locked in development preview mode without event tap.")
+    }
+
+    func beginDevelopmentUnlockHold() {
+        guard isDevelopmentPreview, isLocked else {
+            return
+        }
+
+        startUnlockHoldIfNeeded()
+    }
+
+    func cancelDevelopmentUnlockHold() {
+        guard isDevelopmentPreview else {
+            return
+        }
+
+        cancelUnlockHold()
+    }
+
     func stopEventTap() {
         eventTapController.stop()
         isEventTapRunning = false
@@ -82,6 +110,18 @@ final class LockController: ObservableObject {
             return
         }
 
+        isDevelopmentPreview = false
+        beginLock()
+        AppLogger.lock.info(
+            "Locked. Auto unlock duration: \(self.settings.autoUnlockDuration, privacy: .public)s."
+        )
+    }
+
+    private func beginLock() {
+        guard !isLocked else {
+            return
+        }
+
         resetHeldShortcut()
         cancelReleaseGuard()
         lockStartedAt = Date()
@@ -89,9 +129,6 @@ final class LockController: ObservableObject {
         lastError = nil
         scheduleAutoUnlock()
         OverlayController.shared.show(lockController: self, shortcut: settings.shortcut)
-        AppLogger.lock.info(
-            "Locked. Auto unlock duration: \(self.settings.autoUnlockDuration, privacy: .public)s."
-        )
     }
 
     func unlock() {
@@ -132,6 +169,7 @@ final class LockController: ObservableObject {
         cancelReleaseGuard()
         resetHeldShortcut()
         lockStartedAt = nil
+        isDevelopmentPreview = false
         OverlayController.shared.hide()
         AppLogger.lock.info("Unlocked.")
     }
@@ -255,7 +293,11 @@ final class LockController: ObservableObject {
         unlockProgress = min(1, elapsed / settings.unlockHoldDuration)
         unlockRemainingSeconds = max(0, Int(ceil(settings.unlockHoldDuration - elapsed)))
         if elapsed >= settings.unlockHoldDuration {
-            beginReleaseGuard()
+            if isDevelopmentPreview {
+                finishUnlock()
+            } else {
+                beginReleaseGuard()
+            }
         }
     }
 

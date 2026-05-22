@@ -14,7 +14,12 @@ final class AppState: ObservableObject {
     private let settingsStore: SettingsStore
     private let permissionManager = PermissionManager()
     private let loginItemManager = LoginItemManager()
+    private let developmentHotKeyController = DevelopmentHotKeyController()
     private var permissionMonitorTimer: Timer?
+
+    var isDevelopmentPermissionBypassEnabled: Bool {
+        DevelopmentSettings.skipsPermissionChecks
+    }
 
     var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
@@ -35,16 +40,27 @@ final class AppState: ObservableObject {
     func start() {
         refreshPermissions(prompt: false)
         refreshLaunchAtLogin()
-        startPermissionMonitor()
+        if isDevelopmentPermissionBypassEnabled {
+            startDevelopmentHotKey()
+        } else {
+            startPermissionMonitor()
+        }
     }
 
     func shutdown() {
         stopPermissionMonitor()
+        developmentHotKeyController.stop()
         lockController.unlock()
         lockController.stopEventTap()
     }
 
     func lockNow() {
+        if isDevelopmentPermissionBypassEnabled {
+            lockController.lockForDevelopmentPreview()
+            lastError = nil
+            return
+        }
+
         guard permissionManager.isTrusted() else {
             refreshPermissions(prompt: true)
             lastError = "Autorise CleanKey dans Accessibilité avant de verrouiller."
@@ -70,6 +86,19 @@ final class AppState: ObservableObject {
         settings.shortcut = shortcut
         saveSettings()
         lockController.updateSettings(settings)
+        if isDevelopmentPermissionBypassEnabled {
+            guard updateDevelopmentHotKey() else {
+                return
+            }
+        }
+        lastError = nil
+    }
+
+    func updateUnlockHoldDuration(_ duration: TimeInterval) {
+        settings.unlockHoldDuration = duration
+        settings.enforceSafetyLimits()
+        saveSettings()
+        lockController.updateSettings(settings)
         lastError = nil
     }
 
@@ -87,6 +116,11 @@ final class AppState: ObservableObject {
     }
 
     func refreshPermissions(prompt: Bool) {
+        if isDevelopmentPermissionBypassEnabled {
+            permissionStatus = .developmentBypass
+            return
+        }
+
         let newStatus = permissionManager.status(prompt: prompt)
         let wasTrusted = permissionStatus == .trusted
         permissionStatus = newStatus
@@ -131,6 +165,52 @@ final class AppState: ObservableObject {
     private func stopPermissionMonitor() {
         permissionMonitorTimer?.invalidate()
         permissionMonitorTimer = nil
+    }
+
+    private func startDevelopmentHotKey() {
+        developmentHotKeyController.onPressed = { [weak self] in
+            self?.handleDevelopmentShortcutPressed()
+        }
+        developmentHotKeyController.onReleased = { [weak self] in
+            self?.handleDevelopmentShortcutReleased()
+        }
+
+        guard developmentHotKeyController.start(shortcut: settings.shortcut) else {
+            lastError = "Impossible d'enregistrer le raccourci global en mode dev."
+            return
+        }
+
+        lastError = nil
+    }
+
+    private func updateDevelopmentHotKey() -> Bool {
+        guard developmentHotKeyController.updateShortcut(settings.shortcut) else {
+            lastError = "Impossible d'enregistrer le raccourci global en mode dev."
+            return false
+        }
+
+        return true
+    }
+
+    private func handleDevelopmentShortcutPressed() {
+        guard isDevelopmentPermissionBypassEnabled else {
+            return
+        }
+
+        if lockController.isLocked {
+            lockController.beginDevelopmentUnlockHold()
+        } else {
+            lockController.lockForDevelopmentPreview()
+        }
+        lastError = nil
+    }
+
+    private func handleDevelopmentShortcutReleased() {
+        guard isDevelopmentPermissionBypassEnabled else {
+            return
+        }
+
+        lockController.cancelDevelopmentUnlockHold()
     }
 
     private func saveSettings() {

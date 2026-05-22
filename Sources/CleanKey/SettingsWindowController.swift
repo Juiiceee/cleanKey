@@ -16,7 +16,7 @@ final class SettingsWindowController {
             let window = NSWindow(contentViewController: hostingController)
             window.title = "Réglages CleanKey"
             window.styleMask = [.titled, .closable, .miniaturizable]
-            window.setContentSize(NSSize(width: 560, height: 560))
+            window.setContentSize(NSSize(width: 560, height: 620))
             window.center()
             window.isReleasedWhenClosed = false
             self.window = window

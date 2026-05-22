@@ -33,6 +33,15 @@ final class GlobalShortcutTests: XCTestCase {
         XCTAssertEqual(decoded, settings)
     }
 
+    func testDefaultUnlockHoldDurationIsTwoSeconds() {
+        XCTAssertEqual(AppSettings().unlockHoldDuration, 2)
+    }
+
+    func testUnlockHoldDurationIsClamped() {
+        XCTAssertEqual(AppSettings(unlockHoldDuration: 0).unlockHoldDuration, 1)
+        XCTAssertEqual(AppSettings(unlockHoldDuration: 30).unlockHoldDuration, 10)
+    }
+
     func testAutoUnlockDurationIsClampedToThreeMinutes() {
         let settings = AppSettings(autoUnlockDuration: 600)
         XCTAssertEqual(settings.autoUnlockDuration, 180)

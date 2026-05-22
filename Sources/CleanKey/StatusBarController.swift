@@ -107,6 +107,7 @@ final class StatusBarController: NSObject {
 
         let permissionsItem = NSMenuItem(title: appState.permissionStatus.label, action: #selector(openPermissions), keyEquivalent: "")
         permissionsItem.target = self
+        permissionsItem.isEnabled = !appState.isDevelopmentPermissionBypassEnabled
         menu.addItem(permissionsItem)
 
         menu.addItem(.separator())
@@ -127,6 +128,10 @@ final class StatusBarController: NSObject {
     }
 
     @objc private func openPermissions() {
+        guard !appState.isDevelopmentPermissionBypassEnabled else {
+            return
+        }
+
         appState.refreshPermissions(prompt: true)
         appState.openAccessibilitySettings()
     }

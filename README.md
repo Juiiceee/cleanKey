@@ -18,7 +18,7 @@ The app is designed around one important rule: **you should never be trapped**. 
 ## Features
 
 - Global shortcut to lock all input.
-- Hold the same shortcut for 5 seconds to unlock.
+- Hold the same shortcut for the configured timer duration to unlock.
 - Fullscreen overlay with remaining time and unlock progress.
 - Automatic unlock after 3 minutes maximum.
 - 1-second post-unlock guard to avoid accidental shortcut fallout.
@@ -54,11 +54,21 @@ Default shortcut:
 Control + Option + Command + L
 ```
 
+## Development
+
+Debug builds skip macOS permission checks by default so `swift run` can exercise the menu bar app, global shortcut and lock overlay without granting Accessibility permission. In this mode, CleanKey shows a development preview overlay and does not block real keyboard, mouse or trackpad input.
+
+To test the real event tap and permission flow from a debug build:
+
+```sh
+CLEANKEY_SKIP_PERMISSIONS=0 swift run
+```
+
 ## How It Works
 
 Press the configured shortcut once to lock input. CleanKey shows a fullscreen overlay and starts a 3-minute safety timer.
 
-To unlock manually, press the same shortcut again and keep holding it for 5 seconds. The overlay shows the hold progress so you know exactly when the unlock is about to complete.
+To unlock manually, press the same shortcut again and keep holding it for the configured timer duration. The default is 2 seconds, and the overlay shows the hold progress so you know exactly when the unlock is about to complete.
 
 If the shortcut fails, if permissions change, or if something unexpected happens, CleanKey is designed to recover:
 
@@ -81,6 +91,7 @@ Open the CleanKey menu bar icon to access:
 The settings window lets you:
 
 - change the global shortcut;
+- choose the hold-to-unlock timer duration;
 - enable or disable launch at login;
 - verify permissions;
 - open Accessibility and Input Monitoring settings;

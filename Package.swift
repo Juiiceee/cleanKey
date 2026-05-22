@@ -16,7 +16,10 @@ let package = Package(
         ),
         .executableTarget(
             name: "CleanKey",
-            dependencies: ["CleanKeyCore"]
+            dependencies: ["CleanKeyCore"],
+            swiftSettings: [
+                .define("DEBUG", .when(configuration: .debug))
+            ]
         ),
         .testTarget(
             name: "CleanKeyCoreTests",

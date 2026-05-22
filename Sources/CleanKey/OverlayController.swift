@@ -103,6 +103,15 @@ private struct LockOverlayView: View {
                             Capsule()
                                 .stroke(.white.opacity(0.18), lineWidth: 1)
                         )
+
+                    if lockController.isDevelopmentPreview {
+                        Button("Déverrouiller") {
+                            lockController.unlock()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .padding(.top, 4)
+                    }
                 }
                 .foregroundStyle(.white)
                 .padding(36)
@@ -157,10 +166,14 @@ private struct LockOverlayView: View {
         return OverlayDisplayState(
             symbolName: "lock.fill",
             title: "CleanKey verrouillé",
-            subtitle: "Maintiens \(shortcut.displayString) pendant 5 secondes pour déverrouiller.",
+            subtitle: lockController.isDevelopmentPreview
+                ? "Mode dev: les entrées ne sont pas bloquées."
+                : "Maintiens \(shortcut.displayString) pendant \(durationLabel(lockController.unlockHoldDuration)) pour déverrouiller.",
             primaryValue: formattedDuration(remaining),
             secondaryValue: "auto",
-            footer: progress >= 0.85 ? "Déverrouillage automatique imminent" : "Sécurité 3 minutes maximum",
+            footer: lockController.isDevelopmentPreview
+                ? "Prévisualisation sans autorisation macOS"
+                : progress >= 0.85 ? "Déverrouillage automatique imminent" : "Sécurité 3 minutes maximum",
             progress: progress,
             tint: progress >= 0.85 ? .green : .white
         )
@@ -193,6 +206,11 @@ private struct LockOverlayView: View {
         let minutes = clampedSeconds / 60
         let seconds = clampedSeconds % 60
         return "\(minutes):\(String(format: "%02d", seconds))"
+    }
+
+    private func durationLabel(_ duration: TimeInterval) -> String {
+        let seconds = Int(duration.rounded())
+        return seconds == 1 ? "1 seconde" : "\(seconds) secondes"
     }
 }
 

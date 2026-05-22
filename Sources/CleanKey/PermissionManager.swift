@@ -5,6 +5,7 @@ import Foundation
 enum PermissionStatus: Equatable {
     case trusted
     case missing
+    case developmentBypass
 
     var label: String {
         switch self {
@@ -12,7 +13,13 @@ enum PermissionStatus: Equatable {
             "Permissions accordées"
         case .missing:
             "Permissions manquantes"
+        case .developmentBypass:
+            "Mode dev: permissions ignorées"
         }
+    }
+
+    var isReady: Bool {
+        self == .trusted || self == .developmentBypass
     }
 }
 

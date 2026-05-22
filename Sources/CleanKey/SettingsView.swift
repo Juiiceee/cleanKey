@@ -16,6 +16,7 @@ struct SettingsView: View {
             header
             Divider()
             shortcutSection
+            unlockTimerSection
             launchSection
             permissionsSection
             aboutSection
@@ -23,7 +24,7 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(24)
-        .frame(minWidth: 520, minHeight: 520)
+        .frame(minWidth: 520, minHeight: 580)
         .onDisappear {
             shortcutRecorder.stop()
         }
@@ -48,6 +49,28 @@ struct SettingsView: View {
                 appState.lockNow()
             }
             .disabled(lockController.isLocked)
+        }
+    }
+
+    private var unlockTimerSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("Timer")
+            Picker(
+                "Maintien pour déverrouiller",
+                selection: Binding(
+                    get: { appState.settings.unlockHoldDuration },
+                    set: { appState.updateUnlockHoldDuration($0) }
+                )
+            ) {
+                ForEach(AppSettings.unlockHoldDurationOptions, id: \.self) { duration in
+                    Text(Self.durationLabel(duration)).tag(duration)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text("Durée pendant laquelle le raccourci doit rester maintenu pour déverrouiller.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -95,20 +118,25 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("Permissions")
             HStack {
-                Label(appState.permissionStatus.label, systemImage: appState.permissionStatus == .trusted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                    .foregroundStyle(appState.permissionStatus == .trusted ? .green : .orange)
+                Label(appState.permissionStatus.label, systemImage: appState.permissionStatus.isReady ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                    .foregroundStyle(appState.permissionStatus.isReady ? .green : .orange)
 
                 Spacer()
 
                 Button("Vérifier") {
                     appState.refreshPermissions(prompt: false)
                 }
+                .disabled(appState.isDevelopmentPermissionBypassEnabled)
+
                 Button("Accessibilité") {
                     appState.openAccessibilitySettings()
                 }
+                .disabled(appState.isDevelopmentPermissionBypassEnabled)
+
                 Button("Input Monitoring") {
                     appState.openInputMonitoringSettings()
                 }
+                .disabled(appState.isDevelopmentPermissionBypassEnabled)
             }
         }
     }
@@ -141,5 +169,10 @@ struct SettingsView: View {
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
             .font(.headline)
+    }
+
+    private static func durationLabel(_ duration: TimeInterval) -> String {
+        let seconds = Int(duration.rounded())
+        return "\(seconds) s"
     }
 }
